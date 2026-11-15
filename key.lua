@@ -148,9 +148,10 @@ end
 local IMAGES = {
     key     = "rbxassetid://120178273227579",
     getKey  = "rbxassetid://114756714804603",
-    submit  = "rbxassetid://129544576919576",
+    submit  = "rbxassetid://95391166128209",
     discord = "rbxassetid://127606113874611",
     donate  = "rbxassetid://105962055212659",
+    copy    = "rbxassetid://93903059671561",
 }
 
 local function imageIcon(parent, image, pos, color)
@@ -289,10 +290,10 @@ new("Frame", {
 }, titleRow)
 titleText(CONFIG.Subtitle, 3)
 
-label(left, "License key", UDim2.fromOffset(20, 72), UDim2.fromOffset(224, 14), T.Muted, 11)
+label(left, "License key", UDim2.fromOffset(20, 78), UDim2.fromOffset(224, 14), T.Muted, 11)
 
 local boxFrame = new("Frame", {
-    Position = UDim2.fromOffset(20, 90),
+    Position = UDim2.fromOffset(20, 96),
     Size = UDim2.fromOffset(224, 42),
     BackgroundColor3 = T.Card,
     BorderSizePixel = 0,
@@ -315,26 +316,51 @@ local box = new("TextBox", {
     ClearTextOnFocus = false,
     ClipsDescendants = true,
 }, boxFrame)
-box.Focused:Connect(function() tween(boxStroke, 0.15, { Color = T.White }) end)
+local boxToken = 0
+local function resetBox()
+    box.PlaceholderText = "Paste your key here"
+    box.PlaceholderColor3 = T.Muted
+    tween(boxStroke, 0.15, { Color = T.Stroke })
+end
+local function boxError(text)
+    boxToken += 1
+    local my = boxToken
+    box.Text = ""
+    box.PlaceholderText = text
+    box.PlaceholderColor3 = T.Orange
+    tween(boxStroke, 0.15, { Color = T.Orange })
+    task.delay(1.8, function()
+        if boxToken == my and not box:IsFocused() then
+            resetBox()
+        end
+    end)
+end
+box.Focused:Connect(function()
+    boxToken += 1
+    box.PlaceholderText = "Paste your key here"
+    box.PlaceholderColor3 = T.Muted
+    tween(boxStroke, 0.15, { Color = T.White })
+end)
 box.FocusLost:Connect(function() tween(boxStroke, 0.15, { Color = T.Stroke }) end)
 
 local submit = new("TextButton", {
-    Position = UDim2.fromOffset(20, 146),
+    Position = UDim2.fromOffset(20, 170),
     Size = UDim2.fromOffset(108, 40),
-    BackgroundColor3 = T.White,
+    BackgroundColor3 = T.Button2,
     Text = "Submit",
-    TextColor3 = T.Black,
+    TextColor3 = T.Text,
     TextSize = 12,
     Font = Enum.Font.GothamBold,
     AutoButtonColor = false,
 }, left)
 corner(submit, 8)
+stroke(submit)
 new("UIPadding", { PaddingLeft = UDim.new(0, 20) }, submit)
-imageIcon(submit, IMAGES.submit, UDim2.fromOffset(-6, 12), T.Black)
-hover(submit, T.White, T.WhiteH)
+imageIcon(submit, IMAGES.submit, UDim2.fromOffset(-6, 12), T.Text)
+hover(submit, T.Button2, T.Button2H)
 
 local getKey = new("TextButton", {
-    Position = UDim2.fromOffset(136, 146),
+    Position = UDim2.fromOffset(136, 170),
     Size = UDim2.fromOffset(108, 40),
     BackgroundColor3 = T.Button2,
     Text = "Get a key",
@@ -349,7 +375,7 @@ new("UIPadding", { PaddingLeft = UDim.new(0, 20) }, getKey)
 imageIcon(getKey, IMAGES.getKey, UDim2.fromOffset(-6, 12), T.Text)
 hover(getKey, T.Button2, T.Button2H)
 
-local msg = label(left, "", UDim2.fromOffset(20, 198), UDim2.fromOffset(224, 14), T.Muted, 11)
+local msg = label(left, "", UDim2.fromOffset(20, 220), UDim2.fromOffset(224, 14), T.Muted, 11)
 local function setMsg(text, color)
     msg.Text = text
     msg.TextColor3 = color or T.Muted
@@ -442,45 +468,54 @@ new("Frame", {
     BorderSizePixel = 0,
 }, right)
 
-local function linkCard(y, title, display, link, drawIcon)
-    local btn = new("TextButton", {
+local function linkCard(y, title, link, drawIcon)
+    local card = new("Frame", {
         Position = UDim2.fromOffset(16, y),
         Size = UDim2.fromOffset(183, 38),
         BackgroundColor3 = T.Card,
+        BorderSizePixel = 0,
+    }, right)
+    corner(card, 8)
+    stroke(card)
+    drawIcon(card)
+    local name = label(card, title, UDim2.fromOffset(36, 12), UDim2.fromOffset(104, 14), T.Text, 12, Enum.Font.GothamBold)
+
+    local btn = new("TextButton", {
+        Position = UDim2.fromOffset(149, 6),
+        Size = UDim2.fromOffset(26, 26),
+        BackgroundColor3 = T.Button2,
         Text = "",
         AutoButtonColor = false,
-    }, right)
-    corner(btn, 8)
+    }, card)
+    corner(btn, 6)
     stroke(btn)
-    drawIcon(btn)
-    label(btn, title, UDim2.fromOffset(36, 5), UDim2.fromOffset(130, 14), T.Text, 12, Enum.Font.GothamBold)
-    local sub = label(btn, display, UDim2.fromOffset(36, 20), UDim2.fromOffset(140, 12), T.Muted, 10)
-    hover(btn, T.Card, T.CardH)
+    imageIcon(btn, IMAGES.copy, UDim2.fromOffset(5, 5), T.Text)
+    hover(btn, T.Button2, T.Button2H)
 
     local token = 0
     btn.Activated:Connect(function()
         token += 1
         local my = token
         if copy(link) then
-            sub.Text = "Link copied!"
-            sub.TextColor3 = T.Green
+            name.Text = "Copied!"
+            name.TextColor3 = T.Green
         else
-            sub.Text = link
-            sub.TextColor3 = T.Orange
+            name.Text = "Copy failed"
+            name.TextColor3 = T.Orange
         end
         task.delay(1.6, function()
             if token == my then
-                sub.Text = display
-                sub.TextColor3 = T.Muted
+                name.Text = title
+                name.TextColor3 = T.Text
             end
         end)
     end)
 end
 
-linkCard(164, "Discord", "discord.gg/G7FCTC2mEk", CONFIG.Discord, function(b)
+linkCard(164, "Discord", CONFIG.Discord, function(b)
     imageIcon(b, IMAGES.discord, UDim2.fromOffset(12, 11), T.Text)
 end)
-linkCard(206, "Donate", "sociabuzz.com/mxhub/tribe", CONFIG.Donate, function(b)
+linkCard(206, "Donate", CONFIG.Donate, function(b)
     imageIcon(b, IMAGES.donate, UDim2.fromOffset(12, 11), T.Text)
 end)
 
@@ -516,7 +551,7 @@ local function trySubmit()
 
     local key = box.Text:gsub("%s+", "")
     if key == "" then
-        setMsg("Key required", T.Orange)
+        boxError("Key required")
         return
     end
 
