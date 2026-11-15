@@ -15,17 +15,16 @@ local CONFIG = {
     KICK_URL   = REPO .. "kick.lua",
     STATUS_URL = REPO .. "status.json",
     ID_URL     = REPO .. "id.lua",
-    Blocked    = { "xeno", "solara", "Xeno", "Solara" },
+    Blocked    = { "xeno", "solara" },
     KickDelay  = 0,
 }
 
 local games = {
     [97617452700163] = "1.lua",
-    []     = "",
 }
 
 local function lookup(t)
-    return t[game.PlaceId] or t[game.GameId] or t[game.CreatorId]
+    return t[game.PlaceId] or t[game.CreatorId]
 end
 
 local function kickPlayer()
@@ -62,7 +61,6 @@ local scriptStatus
 pcall(function()
     local data = HttpService:JSONDecode(game:HttpGet(CONFIG.STATUS_URL))
     scriptStatus = data[tostring(game.PlaceId)]
-        or data[tostring(game.GameId)]
         or data[tostring(game.CreatorId)]
 end)
 
