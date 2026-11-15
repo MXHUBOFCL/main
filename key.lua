@@ -23,8 +23,8 @@ local CONFIG = {
     Donate   = "https://sociabuzz.com/mxhub/tribe",
 
     GetKeyLink = "https://discord.gg/G7FCTC2mEk",
-    Keys = { "MXHUB-KEY-1", "MXHUB-KEY-2" },
-    SaveFile  = "MXHUB_Key.txt",
+    Keys = { "MXHUB-KEY", "MXHUB-KEY-2" },
+    SaveFile  = "MXHUB.txt",
 }
 
 local function validateKey(key)
