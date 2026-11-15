@@ -25,7 +25,7 @@ local CONFIG = {
     Donate   = "https://sociabuzz.com/mxhub/tribe",
 
     GetKeyLink = "https://discord.gg/G7FCTC2mEk",
-    SaveFile  = "MXHUB_Key.txt",
+    SaveFile  = "MXHUB-KEY.txt",
 }
 
 -- Ambil key & whitelist dari id.lua (remote)
