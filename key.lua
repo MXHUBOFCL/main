@@ -254,16 +254,24 @@ local main = new("CanvasGroup", {
     AnchorPoint = Vector2.new(0.5, 0.5),
     Position = UDim2.fromScale(0.5, 0.5),
     Size = UDim2.fromScale(1, 1),
-    BackgroundColor3 = Color3.new(1, 1, 1),
+    BackgroundTransparency = 1,
     BorderSizePixel = 0,
     GroupTransparency = 1,
 }, root)
 corner(main, 12)
-stroke(main, T.Stroke, 0)
+
+local bg = new("Frame", {
+    Size = UDim2.fromScale(1, 1),
+    BackgroundColor3 = Color3.new(1, 1, 1),
+    BorderSizePixel = 0,
+}, main)
+corner(bg, 12)
+stroke(bg, T.Stroke, 0)
 new("UIGradient", {
     Color = ColorSequence.new(T.Panel, T.PanelB),
     Rotation = 90,
-}, main)
+}, bg)
+
 local mainScale = new("UIScale", { Scale = 0.96 }, main)
 
 local left = new("Frame", {
