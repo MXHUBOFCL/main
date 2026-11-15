@@ -10,23 +10,15 @@ local env = (getgenv and getgenv()) or _G
 local REPO = "https://raw.githubusercontent.com/MXHUBOFCL/main/main/"
 
 local CONFIG = {
-    GUI_URL    = REPO .. "ui/keygui.lua",
+    GUI_URL    = REPO .. "key.lua",
     BASE       = REPO .. "games/",
-
-    -- URL 1: dijalankan untuk kick player kalau game tidak terdaftar
     KICK_URL   = REPO .. "kick.lua",
-
-    -- URL 2: JSON status script per game (work / down / need update)
     STATUS_URL = REPO .. "status.json",
-
-    -- URL 3: id.lua berisi daftar key + whitelist UserId Roblox
     ID_URL     = REPO .. "id.lua",
-
-    Blocked    = { "xeno", "solara" },
-    KickDelay  = 4,
+    Blocked    = { "xeno", "solara", "Xeno", "Solara" },
+    KickDelay  = 0,
 }
 
--- Daftar game yang terdaftar. Key bisa PlaceId, GameId, atau CreatorId.
 local games = {
     [97617452700163] = "contoh1.lua",
     [0000000001]     = "contoh2.lua",
@@ -36,21 +28,16 @@ local function lookup(t)
     return t[game.PlaceId] or t[game.GameId] or t[game.CreatorId]
 end
 
-local function kickPlayer(reason)
-    env.MXHUB_KICK_REASON = reason
-    local ok = pcall(function()
+local function kickPlayer()
+    pcall(function()
         loadstring(game:HttpGet(CONFIG.KICK_URL))()
     end)
-    if not ok then
-        pcall(function() lp:Kick(reason) end)
-    end
 end
 
 local file = lookup(games)
 
--- Game tidak terdaftar -> jalankan URL kick
 if not file then
-    kickPlayer("MX HUB: this game is not supported")
+    kickPlayer()
     return
 end
 
@@ -71,7 +58,6 @@ do
     end
 end
 
--- Ambil status script dari URL status
 local scriptStatus
 pcall(function()
     local data = HttpService:JSONDecode(game:HttpGet(CONFIG.STATUS_URL))
