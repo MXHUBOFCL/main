@@ -1,7 +1,7 @@
 return {
     Keys = {
         "MXHUB-THE-BEST",
-        "MXHUB-ON-TOP",
+        "MXHUB-ONTOP",
     },
 
     Whitelist = {
