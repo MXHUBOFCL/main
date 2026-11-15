@@ -7,14 +7,14 @@ local lp = Players.LocalPlayer
 local env = (getgenv and getgenv()) or _G
 
 local CONFIG = {
-    GUI_URL   = "https://raw.githubusercontent.com/MXHUBOFCL/main/main/ui/keygui.lua",
+    GUI_URL   = "https://raw.githubusercontent.com/MXHUBOFCL/main/main/key.lua",
     BASE      = "https://raw.githubusercontent.com/MXHUBOFCL/main/main/games/",
     Blocked   = { "xeno", "solara" },
-    KickDelay = 4,
+    KickDelay = 0,
 }
 
 local games = {
-    [0000000000] = "contoh1.lua",
+    [97617452700163] = "1.lua",
     [0000000001] = "contoh2.lua",
 }
 
