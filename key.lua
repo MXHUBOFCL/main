@@ -250,29 +250,20 @@ local shadow = new("ImageLabel", {
     SliceCenter = Rect.new(49, 49, 450, 450),
 }, root)
 
-local main = new("CanvasGroup", {
+local main = new("Frame", {
     AnchorPoint = Vector2.new(0.5, 0.5),
     Position = UDim2.fromScale(0.5, 0.5),
     Size = UDim2.fromScale(1, 1),
-    BackgroundTransparency = 1,
-    BorderSizePixel = 0,
-    GroupTransparency = 1,
-}, root)
-corner(main, 12)
-
-local bg = new("Frame", {
-    Size = UDim2.fromScale(1, 1),
     BackgroundColor3 = Color3.new(1, 1, 1),
     BorderSizePixel = 0,
-}, main)
-corner(bg, 12)
-stroke(bg, T.Stroke, 0)
+}, root)
+corner(main, 12)
+stroke(main, T.Stroke, 0)
 new("UIGradient", {
     Color = ColorSequence.new(T.Panel, T.PanelB),
     Rotation = 90,
-}, bg)
-
-local mainScale = new("UIScale", { Scale = 0.96 }, main)
+}, main)
+local mainScale = new("UIScale", { Scale = 0.95 }, main)
 
 local left = new("Frame", {
     Size = UDim2.fromOffset(264, H),
@@ -626,9 +617,8 @@ local function trySubmit()
 
     task.wait(0.7)
     tween(shadow, 0.3, { ImageTransparency = 1 })
-    tween(main, 0.3, { GroupTransparency = 1 })
-    tween(mainScale, 0.3, { Scale = 0.96 })
-    task.wait(0.35)
+    tween(mainScale, 0.3, { Scale = 0.9 }, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+    task.wait(0.32)
     gui:Destroy()
 
     env.MXHUB_KEY = key
@@ -641,5 +631,4 @@ box.FocusLost:Connect(function(enter)
 end)
 
 tween(shadow, 0.5, { ImageTransparency = 0.6 })
-tween(main, 0.45, { GroupTransparency = 0 })
 tween(mainScale, 0.45, { Scale = 1 })
