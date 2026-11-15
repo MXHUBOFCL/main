@@ -1,7 +1,6 @@
 local Players            = game:GetService("Players")
 local TweenService       = game:GetService("TweenService")
 local MarketplaceService = game:GetService("MarketplaceService")
-local HttpService        = game:GetService("HttpService")
 local CoreGui            = game:GetService("CoreGui")
 local Workspace          = game:GetService("Workspace")
 local LP                 = Players.LocalPlayer
@@ -9,12 +8,12 @@ local LP                 = Players.LocalPlayer
 local env = (getgenv and getgenv()) or _G
 local ctx = env.MXHUB_CTX or {}
 
-local execName  = ctx.ExecName or "Unknown"
-local isBlocked = ctx.IsBlocked == true
-local gameFile  = ctx.GameFile
-local onSuccess = ctx.OnSuccess or function() end
+local execName     = ctx.ExecName or "Unknown"
+local isBlocked    = ctx.IsBlocked == true
+local gameFile     = ctx.GameFile
+local onSuccess    = ctx.OnSuccess or function() end
 local scriptStatus = ctx.ScriptStatus
-local idUrl = ctx.IDUrl
+local idUrl        = ctx.IDUrl
 
 local CONFIG = {
     Name     = "MX HUB",
@@ -25,7 +24,7 @@ local CONFIG = {
     Donate   = "https://sociabuzz.com/mxhub/tribe",
 
     GetKeyLink = "https://discord.gg/G7FCTC2mEk",
-    SaveFile  = "MXHUB_Key.txt",
+    SaveFile   = "MXHUB_Key.txt",
 }
 
 local idData = {}
@@ -85,18 +84,16 @@ if savedKey and savedKey ~= "" and not isBlocked and gameFile then
 end
 
 local T = {
-    Panel    = Color3.fromRGB(17, 17, 17),
-    PanelB   = Color3.fromRGB(10, 10, 10),
-    Card     = Color3.fromRGB(25, 25, 25),
-    CardH    = Color3.fromRGB(35, 35, 35),
-    Stroke   = Color3.fromRGB(50, 50, 50),
-    Button2  = Color3.fromRGB(34, 34, 34),
-    Button2H = Color3.fromRGB(52, 52, 52),
+    Panel    = Color3.fromRGB(21, 21, 23),
+    PanelB   = Color3.fromRGB(12, 12, 14),
+    Card     = Color3.fromRGB(28, 28, 31),
+    Stroke   = Color3.fromRGB(46, 46, 52),
+    StrokeH  = Color3.fromRGB(84, 84, 92),
+    Button2  = Color3.fromRGB(35, 35, 39),
+    Button2H = Color3.fromRGB(50, 50, 56),
     White    = Color3.fromRGB(245, 245, 245),
-    WhiteH   = Color3.fromRGB(212, 212, 212),
-    Black    = Color3.fromRGB(10, 10, 10),
-    Text     = Color3.fromRGB(245, 245, 245),
-    Muted    = Color3.fromRGB(138, 138, 138),
+    Text     = Color3.fromRGB(240, 240, 242),
+    Muted    = Color3.fromRGB(135, 135, 144),
     Green    = Color3.fromRGB(86, 204, 124),
     Red      = Color3.fromRGB(240, 88, 88),
     Orange   = Color3.fromRGB(240, 180, 72),
@@ -127,8 +124,14 @@ local function stroke(p, c, t)
     }, p)
 end
 
-local function tween(o, t, props)
-    TweenService:Create(o, TweenInfo.new(t, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
+local function tween(o, t, props, style, dir)
+    local tw = TweenService:Create(
+        o,
+        TweenInfo.new(t, style or Enum.EasingStyle.Quint, dir or Enum.EasingDirection.Out),
+        props
+    )
+    tw:Play()
+    return tw
 end
 
 local function label(parent, text, pos, size, color, ts, font, align)
@@ -173,9 +176,23 @@ local function copy(text)
     return false
 end
 
-local function hover(btn, normal, over)
-    btn.MouseEnter:Connect(function() tween(btn, 0.15, { BackgroundColor3 = over }) end)
-    btn.MouseLeave:Connect(function() tween(btn, 0.15, { BackgroundColor3 = normal }) end)
+local function hover(btn, normal, over, strokeObj)
+    local press = new("UIScale", { Scale = 1 }, btn)
+    btn.MouseEnter:Connect(function()
+        tween(btn, 0.2, { BackgroundColor3 = over })
+        if strokeObj then tween(strokeObj, 0.2, { Color = T.StrokeH }) end
+    end)
+    btn.MouseLeave:Connect(function()
+        tween(btn, 0.2, { BackgroundColor3 = normal })
+        tween(press, 0.2, { Scale = 1 })
+        if strokeObj then tween(strokeObj, 0.2, { Color = T.Stroke }) end
+    end)
+    btn.MouseButton1Down:Connect(function()
+        tween(press, 0.08, { Scale = 0.97 })
+    end)
+    btn.MouseButton1Up:Connect(function()
+        tween(press, 0.16, { Scale = 1 })
+    end)
 end
 
 local gui = new("ScreenGui", {
@@ -218,7 +235,8 @@ do
         scale.Scale = math.clamp(math.min((v.X - 24) / W, (v.Y - 24) / H), 0.5, 1)
     end
     fit()
-    cam:GetPropertyChangedSignal("ViewportSize"):Connect(fit)
+    local conn = cam:GetPropertyChangedSignal("ViewportSize"):Connect(fit)
+    gui.Destroying:Connect(function() conn:Disconnect() end)
 end
 
 local shadow = new("ImageLabel", {
@@ -232,17 +250,21 @@ local shadow = new("ImageLabel", {
     SliceCenter = Rect.new(49, 49, 450, 450),
 }, root)
 
-local main = new("Frame", {
+local main = new("CanvasGroup", {
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.5),
     Size = UDim2.fromScale(1, 1),
     BackgroundColor3 = Color3.new(1, 1, 1),
     BorderSizePixel = 0,
+    GroupTransparency = 1,
 }, root)
 corner(main, 12)
-stroke(main, T.Stroke, 0.1)
+stroke(main, T.Stroke, 0)
 new("UIGradient", {
     Color = ColorSequence.new(T.Panel, T.PanelB),
     Rotation = 90,
 }, main)
+local mainScale = new("UIScale", { Scale = 0.96 }, main)
 
 local left = new("Frame", {
     Size = UDim2.fromOffset(264, H),
@@ -269,14 +291,14 @@ new("UIListLayout", {
     Padding = UDim.new(0, 9),
 }, titleRow)
 
-local function titleText(text, order)
+local function titleText(text, order, color)
     return new("TextLabel", {
         LayoutOrder = order,
         BackgroundTransparency = 1,
         Size = UDim2.fromOffset(0, 24),
         AutomaticSize = Enum.AutomaticSize.X,
         Text = text,
-        TextColor3 = T.Text,
+        TextColor3 = color or T.Text,
         TextSize = 16,
         Font = Enum.Font.GothamBold,
     }, titleRow)
@@ -284,13 +306,20 @@ end
 titleText(CONFIG.Name, 1)
 new("Frame", {
     LayoutOrder = 2,
-    Size = UDim2.fromOffset(2, 18),
-    BackgroundColor3 = T.Text,
+    Size = UDim2.fromOffset(1, 16),
+    BackgroundColor3 = T.StrokeH,
     BorderSizePixel = 0,
 }, titleRow)
-titleText(CONFIG.Subtitle, 3)
+titleText(CONFIG.Subtitle, 3, T.Muted)
 
-label(left, "License key", UDim2.fromOffset(20, 78), UDim2.fromOffset(224, 14), T.Muted, 11)
+new("Frame", {
+    Position = UDim2.fromOffset(20, 58),
+    Size = UDim2.fromOffset(224, 1),
+    BackgroundColor3 = T.Stroke,
+    BorderSizePixel = 0,
+}, left)
+
+label(left, "LICENSE KEY", UDim2.fromOffset(20, 76), UDim2.fromOffset(224, 14), T.Muted, 10, Enum.Font.GothamBold)
 
 local boxFrame = new("Frame", {
     Position = UDim2.fromOffset(20, 96),
@@ -300,7 +329,7 @@ local boxFrame = new("Frame", {
 }, left)
 corner(boxFrame, 8)
 local boxStroke = stroke(boxFrame)
-imageIcon(boxFrame, IMAGES.key, UDim2.fromOffset(12, 13), T.Muted)
+local keyIcon = imageIcon(boxFrame, IMAGES.key, UDim2.fromOffset(12, 13), T.Muted)
 
 local box = new("TextBox", {
     Position = UDim2.fromOffset(36, 0),
@@ -308,7 +337,7 @@ local box = new("TextBox", {
     BackgroundTransparency = 1,
     Text = savedKey or "",
     TextColor3 = T.Text,
-    TextSize = 14,
+    TextSize = 13,
     Font = Enum.Font.GothamMedium,
     TextXAlignment = Enum.TextXAlignment.Left,
     PlaceholderText = "Paste your key here",
@@ -316,70 +345,82 @@ local box = new("TextBox", {
     ClearTextOnFocus = false,
     ClipsDescendants = true,
 }, boxFrame)
+
 local boxToken = 0
+local function setBoxColor(c)
+    tween(boxStroke, 0.25, { Color = c })
+    tween(keyIcon, 0.25, { ImageColor3 = c })
+end
+
 local function resetBox()
     box.PlaceholderText = "Paste your key here"
     box.PlaceholderColor3 = T.Muted
-    tween(boxStroke, 0.15, { Color = T.Stroke })
+    tween(boxStroke, 0.25, { Color = T.Stroke })
+    tween(keyIcon, 0.25, { ImageColor3 = T.Muted })
 end
-local function boxError(text)
+
+local function shake()
+    task.spawn(function()
+        for _, dx in ipairs({ 5, -5, 3, -3, 1, 0 }) do
+            tween(boxFrame, 0.04, { Position = UDim2.fromOffset(20 + dx, 96) }, Enum.EasingStyle.Sine)
+            task.wait(0.04)
+        end
+    end)
+end
+
+local function boxMessage(text, color, autoReset, doShake)
     boxToken += 1
     local my = boxToken
     box.Text = ""
     box.PlaceholderText = text
-    box.PlaceholderColor3 = T.Orange
-    tween(boxStroke, 0.15, { Color = T.Orange })
-    task.delay(1.8, function()
-        if boxToken == my and not box:IsFocused() then
-            resetBox()
-        end
-    end)
+    box.PlaceholderColor3 = color
+    setBoxColor(color)
+    if doShake then shake() end
+    if autoReset then
+        task.delay(1.8, function()
+            if boxToken == my and not box:IsFocused() then
+                resetBox()
+            end
+        end)
+    end
 end
+
+local function boxError(text)
+    boxMessage(text, T.Orange, true, true)
+end
+
 box.Focused:Connect(function()
     boxToken += 1
     box.PlaceholderText = "Paste your key here"
     box.PlaceholderColor3 = T.Muted
-    tween(boxStroke, 0.15, { Color = T.White })
+    setBoxColor(T.White)
 end)
-box.FocusLost:Connect(function() tween(boxStroke, 0.15, { Color = T.Stroke }) end)
+box.FocusLost:Connect(function()
+    tween(boxStroke, 0.25, { Color = T.Stroke })
+    tween(keyIcon, 0.25, { ImageColor3 = T.Muted })
+end)
 
-local submit = new("TextButton", {
-    Position = UDim2.fromOffset(20, 170),
-    Size = UDim2.fromOffset(108, 40),
-    BackgroundColor3 = T.Button2,
-    Text = "Submit",
-    TextColor3 = T.Text,
-    TextSize = 12,
-    Font = Enum.Font.GothamBold,
-    AutoButtonColor = false,
-}, left)
-corner(submit, 8)
-stroke(submit)
-new("UIPadding", { PaddingLeft = UDim.new(0, 20) }, submit)
-imageIcon(submit, IMAGES.submit, UDim2.fromOffset(-6, 12), T.Text)
-hover(submit, T.Button2, T.Button2H)
-
-local getKey = new("TextButton", {
-    Position = UDim2.fromOffset(136, 170),
-    Size = UDim2.fromOffset(108, 40),
-    BackgroundColor3 = T.Button2,
-    Text = "Get a key",
-    TextColor3 = T.Text,
-    TextSize = 12,
-    Font = Enum.Font.GothamBold,
-    AutoButtonColor = false,
-}, left)
-corner(getKey, 8)
-stroke(getKey)
-new("UIPadding", { PaddingLeft = UDim.new(0, 20) }, getKey)
-imageIcon(getKey, IMAGES.getKey, UDim2.fromOffset(-6, 12), T.Text)
-hover(getKey, T.Button2, T.Button2H)
-
-local msg = label(left, "", UDim2.fromOffset(20, 220), UDim2.fromOffset(224, 14), T.Muted, 11)
-local function setMsg(text, color)
-    msg.Text = text
-    msg.TextColor3 = color or T.Muted
+local function makeButton(x, text, image)
+    local b = new("TextButton", {
+        Position = UDim2.fromOffset(x, 170),
+        Size = UDim2.fromOffset(108, 40),
+        BackgroundColor3 = T.Button2,
+        Text = text,
+        TextColor3 = T.Text,
+        TextSize = 12,
+        Font = Enum.Font.GothamBold,
+        AutoButtonColor = false,
+    }, left)
+    corner(b, 8)
+    local s = stroke(b)
+    new("UIPadding", { PaddingLeft = UDim.new(0, 20) }, b)
+    imageIcon(b, image, UDim2.fromOffset(-6, 12), T.Text)
+    hover(b, T.Button2, T.Button2H, s)
+    return b
 end
+
+local submit = makeButton(20, "Submit", IMAGES.submit)
+local getKey = makeButton(136, "Get a key", IMAGES.getKey)
 
 new("Frame", {
     Position = UDim2.fromOffset(264, 16),
@@ -394,10 +435,10 @@ local right = new("Frame", {
     BackgroundTransparency = 1,
 }, main)
 
-label(right, "Detected game", UDim2.fromOffset(16, 16), UDim2.fromOffset(183, 14), T.Muted, 11)
+label(right, "DETECTED GAME", UDim2.fromOffset(16, 16), UDim2.fromOffset(150, 14), T.Muted, 10, Enum.Font.GothamBold)
 
 local gameCard = new("Frame", {
-    Position = UDim2.fromOffset(16, 32),
+    Position = UDim2.fromOffset(16, 34),
     Size = UDim2.fromOffset(183, 50),
     BackgroundColor3 = T.Card,
     BorderSizePixel = 0,
@@ -457,18 +498,18 @@ local function scriptStatusInfo(v)
 end
 local st = scriptStatusInfo(scriptStatus)
 
-infoRow(92,  "EXECUTOR :",      execName, T.Text)
-infoRow(110, "STATUS :",        isBlocked and "Not supported" or "Supported", isBlocked and T.Red or T.Green)
-infoRow(128, "SCRIPT STATUS :", st[1], st[2])
+infoRow(94,  "EXECUTOR :",      execName, T.Text)
+infoRow(112, "STATUS :",        isBlocked and "Not supported" or "Supported", isBlocked and T.Red or T.Green)
+infoRow(130, "SCRIPT STATUS :", st[1], st[2])
 
 new("Frame", {
-    Position = UDim2.fromOffset(16, 152),
+    Position = UDim2.fromOffset(16, 154),
     Size = UDim2.fromOffset(183, 1),
     BackgroundColor3 = T.Stroke,
     BorderSizePixel = 0,
 }, right)
 
-local function linkCard(y, title, link, drawIcon)
+local function linkCard(y, title, link, icon)
     local card = new("Frame", {
         Position = UDim2.fromOffset(16, y),
         Size = UDim2.fromOffset(183, 38),
@@ -477,7 +518,7 @@ local function linkCard(y, title, link, drawIcon)
     }, right)
     corner(card, 8)
     stroke(card)
-    drawIcon(card)
+    imageIcon(card, icon, UDim2.fromOffset(12, 11), T.Text)
     local name = label(card, title, UDim2.fromOffset(36, 12), UDim2.fromOffset(104, 14), T.Text, 12, Enum.Font.GothamBold)
 
     local btn = new("TextButton", {
@@ -488,9 +529,9 @@ local function linkCard(y, title, link, drawIcon)
         AutoButtonColor = false,
     }, card)
     corner(btn, 6)
-    stroke(btn)
+    local bs = stroke(btn)
     imageIcon(btn, IMAGES.copy, UDim2.fromOffset(5, 5), T.Text)
-    hover(btn, T.Button2, T.Button2H)
+    hover(btn, T.Button2, T.Button2H, bs)
 
     local token = 0
     btn.Activated:Connect(function()
@@ -498,44 +539,41 @@ local function linkCard(y, title, link, drawIcon)
         local my = token
         if copy(link) then
             name.Text = "Copied!"
-            name.TextColor3 = T.Green
+            tween(name, 0.2, { TextColor3 = T.Green })
         else
             name.Text = "Copy failed"
-            name.TextColor3 = T.Orange
+            tween(name, 0.2, { TextColor3 = T.Orange })
         end
         task.delay(1.6, function()
             if token == my then
                 name.Text = title
-                name.TextColor3 = T.Text
+                tween(name, 0.3, { TextColor3 = T.Text })
             end
         end)
     end)
 end
 
-linkCard(164, "Discord", CONFIG.Discord, function(b)
-    imageIcon(b, IMAGES.discord, UDim2.fromOffset(12, 11), T.Text)
-end)
-linkCard(206, "Donate", CONFIG.Donate, function(b)
-    imageIcon(b, IMAGES.donate, UDim2.fromOffset(12, 11), T.Text)
-end)
+linkCard(164, "Discord", CONFIG.Discord, IMAGES.discord)
+linkCard(206, "Donate", CONFIG.Donate, IMAGES.donate)
 
 if isBlocked then
-    setMsg(execName .. " not supported", T.Red)
+    boxMessage(execName .. " not supported", T.Red, false, false)
 end
 
 local fetching = false
 getKey.Activated:Connect(function()
     if fetching then return end
     fetching = true
-    setMsg("Getting key link...", T.Muted)
+    boxMessage("Getting key link...", T.Muted, false, false)
     task.spawn(function()
+        task.wait(0.35)
         local link = fetchKeyLink()
         if not link then
-            setMsg("Failed to get key link", T.Red)
+            boxMessage("Failed to get key link", T.Red, true, true)
         elseif copy(link) then
-            setMsg("Key link copied, open it in your browser", T.Green)
+            boxMessage("Key link copied", T.Green, true, false)
         else
-            setMsg(link, T.Orange)
+            boxMessage(link, T.Orange, true, false)
         end
         fetching = false
     end)
@@ -545,7 +583,7 @@ local busy = false
 local function trySubmit()
     if busy then return end
     if isBlocked then
-        setMsg(execName .. " not supported", T.Red)
+        boxMessage(execName .. " not supported", T.Red, true, true)
         return
     end
 
@@ -556,11 +594,12 @@ local function trySubmit()
     end
 
     busy = true
-    setMsg("Checking key...", T.Muted)
+    boxMessage("Checking key...", T.Muted, false, false)
+    task.wait(0.45)
 
     local called, valid, text = pcall(validateKey, key)
     if not (called and valid) then
-        setMsg(called and (text or "Invalid key") or "Validation error", T.Red)
+        boxMessage(called and (text or "Invalid key") or "Validation error", T.Red, true, true)
         busy = false
         return
     end
@@ -568,17 +607,20 @@ local function trySubmit()
     pcall(function()
         if writefile then writefile(CONFIG.SaveFile, key) end
     end)
-    setMsg(text or "Key valid", T.Green)
+    boxMessage(text or "Key valid", T.Green, false, false)
 
     if not gameFile then
-        setMsg("Key valid, but this game is not in our list", T.Orange)
+        task.wait(0.6)
+        boxMessage("Key valid, but game not in list", T.Orange, true, false)
         busy = false
         return
     end
 
-    task.wait(0.6)
-    tween(shadow, 0.25, { ImageTransparency = 1 })
-    task.wait(0.3)
+    task.wait(0.7)
+    tween(shadow, 0.3, { ImageTransparency = 1 })
+    tween(main, 0.3, { GroupTransparency = 1 })
+    tween(mainScale, 0.3, { Scale = 0.96 })
+    task.wait(0.35)
     gui:Destroy()
 
     env.MXHUB_KEY = key
@@ -590,4 +632,6 @@ box.FocusLost:Connect(function(enter)
     if enter then trySubmit() end
 end)
 
-tween(shadow, 0.35, { ImageTransparency = 0.6 })
+tween(shadow, 0.5, { ImageTransparency = 0.6 })
+tween(main, 0.45, { GroupTransparency = 0 })
+tween(mainScale, 0.45, { Scale = 1 })
