@@ -15,13 +15,22 @@ local CONFIG = {
     KICK_URL   = REPO .. "kick.lua",
     STATUS_URL = REPO .. "status.json",
     ID_URL     = REPO .. "id.lua",
+    SC_URL     = REPO .. "sc.lua",
     Blocked    = { "xeno", "solara" },
     KickDelay  = 0,
 }
 
-local games = {
-    [97617452700163] = "1.lua",
-}
+local games
+pcall(function()
+    local data = loadstring(game:HttpGet(CONFIG.SC_URL))()
+    if type(data) == "table" then
+        games = data
+    end
+end)
+
+if not games then
+    return
+end
 
 local function lookup(t)
     return t[game.PlaceId] or t[game.CreatorId]
