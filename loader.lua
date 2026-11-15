@@ -20,8 +20,8 @@ local CONFIG = {
 }
 
 local games = {
-    [97617452700163] = "contoh1.lua",
-    [0000000001]     = "contoh2.lua",
+    [97617452700163] = "1.lua",
+    [nil]     = "example.lua",
 }
 
 local function lookup(t)
