@@ -21,7 +21,7 @@ local CONFIG = {
 
 local games = {
     [97617452700163] = "1.lua",
-    [0]     = "nil",
+    []     = "",
 }
 
 local function lookup(t)
