@@ -25,10 +25,9 @@ local CONFIG = {
     Donate   = "https://sociabuzz.com/mxhub/tribe",
 
     GetKeyLink = "https://discord.gg/G7FCTC2mEk",
-    SaveFile  = "MXHUB-KEY.txt",
+    SaveFile  = "MXHUB_Key.txt",
 }
 
--- Ambil key & whitelist dari id.lua (remote)
 local idData = {}
 pcall(function()
     local data = loadstring(game:HttpGet(idUrl))()
@@ -59,7 +58,6 @@ local function validateKey(key)
     return false, "Invalid key"
 end
 
--- User yang masuk whitelist (Roblox UserId) tidak perlu key
 if not isBlocked and gameFile and isWhitelisted() then
     env.MXHUB_KEY = "whitelist"
     onSuccess("whitelist")
@@ -150,7 +148,7 @@ end
 local IMAGES = {
     key     = "rbxassetid://120178273227579",
     getKey  = "rbxassetid://114756714804603",
-    submit  = "rbxassetid://95391166128209",
+    submit  = "rbxassetid://129544576919576",
     discord = "rbxassetid://127606113874611",
     donate  = "rbxassetid://105962055212659",
 }
