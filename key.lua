@@ -202,11 +202,10 @@ local shadow = new("ImageLabel", {
     SliceCenter = Rect.new(49, 49, 450, 450),
 }, root)
 
-local main = new("CanvasGroup", {
+local main = new("Frame", {
     Size = UDim2.fromScale(1, 1),
     BackgroundColor3 = Color3.new(1, 1, 1),
     BorderSizePixel = 0,
-    GroupTransparency = 1,
 }, root)
 corner(main, 12)
 stroke(main, T.Stroke, 0.1)
@@ -492,7 +491,6 @@ local function trySubmit()
     end
 
     task.wait(0.6)
-    tween(main, 0.25, { GroupTransparency = 1 })
     tween(shadow, 0.25, { ImageTransparency = 1 })
     task.wait(0.3)
     gui:Destroy()
@@ -506,5 +504,4 @@ box.FocusLost:Connect(function(enter)
     if enter then trySubmit() end
 end)
 
-tween(main, 0.35, { GroupTransparency = 0 })
 tween(shadow, 0.35, { ImageTransparency = 0.6 })
