@@ -74,9 +74,17 @@ pcall(function()
     end
 end)
 
+local presetKey = env.script_key or _G.script_key or script_key
+if type(presetKey) == "string" and presetKey ~= "" then
+    savedKey = (presetKey:gsub("%s+", ""))
+end
+
 if savedKey and savedKey ~= "" and not isBlocked and gameFile then
     local called, valid = pcall(validateKey, savedKey)
     if called and valid then
+        pcall(function()
+            if writefile then writefile(CONFIG.SaveFile, savedKey) end
+        end)
         env.MXHUB_KEY = savedKey
         onSuccess(savedKey)
         return
