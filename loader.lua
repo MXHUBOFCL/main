@@ -16,6 +16,7 @@ local CONFIG = {
     STATUS_URL = REPO .. "status.json",
     ID_URL     = REPO .. "id.lua",
     SC_URL     = REPO .. "sc.lua",
+    CFG_URL    = REPO .. "config.lua",
     Blocked    = { "xeno", "solara" },
     KickDelay  = 0,
 }
@@ -73,6 +74,21 @@ pcall(function()
         or data[tostring(game.CreatorId)]
 end)
 
+local needKey = true
+pcall(function()
+    local data = loadstring(game:HttpGet(CONFIG.CFG_URL))()
+    if type(data) == "table" and data.Key == false then
+        needKey = false
+    end
+end)
+
+local function runGame()
+    task.wait(math.random())
+    pcall(function()
+        loadstring(game:HttpGet(CONFIG.BASE .. file))()
+    end)
+end
+
 env.MXHUB_CTX = {
     ExecName     = execName,
     IsBlocked    = isBlocked,
@@ -80,10 +96,7 @@ env.MXHUB_CTX = {
     ScriptStatus = scriptStatus,
     IDUrl        = CONFIG.ID_URL,
     OnSuccess    = function(key)
-        task.wait(math.random())
-        pcall(function()
-            loadstring(game:HttpGet(CONFIG.BASE .. file))()
-        end)
+        runGame()
     end,
 }
 
@@ -91,6 +104,18 @@ if isBlocked then
     task.delay(CONFIG.KickDelay, function()
         lp:Kick(execName .. " not supported, get better executor")
     end)
+    if needKey then
+        pcall(function()
+            loadstring(game:HttpGet(CONFIG.GUI_URL))()
+        end)
+    end
+    return
+end
+
+if not needKey then
+    env.MXHUB_KEY = "nokey"
+    runGame()
+    return
 end
 
 pcall(function()
