@@ -10,10 +10,10 @@ end
 local CONFIG = {
     Folder = "MeowX_Dump",
     MaxPerRemote = 5,
-    DumpOnRun = true,
+    DumpOnRun = false,
     SpyOnRun = true,
     SpyOwnCalls = false,
-    DecompileScripts = false,
+    DecompileScripts = true,
     DecompileTimeout = 8,
     RequireModules = true,
     RequireTimeout = 5,
